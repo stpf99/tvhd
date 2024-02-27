@@ -37,20 +37,27 @@ class DVBV5Player(Gtk.Window):
 
         self.drawing_area = Gtk.DrawingArea()
         self.drawing_area.set_size_request(1280, 720)  # Set video area size
-
+        self.drawing_area.set_vexpand(True)
+        self.drawing_area.set_hexpand(True)
         self.signal_info_label = Gtk.Label(label="Signal Info: N/A")
 
 
         self.textview = Gtk.TextView()
-        self.textview.set_editable(False)  # Ustawienie, że obszar tekstowy jest tylko do odczytu
-        self.textview.set_wrap_mode(Gtk.WrapMode.WORD)  # Ustawienie trybu zawijania tekstu
-        # Ustawienie większej czcionki
-        font_desc = Pango.FontDescription("Sans 16")  # Ustawienie czcionki "Sans" o rozmiarze 16
-        self.textview.override_font(font_desc)
+        custom_font = Pango.FontDescription("Arial 18")
+        self.textview.override_font(custom_font)
+        self.textview.set_editable(False)
+        self.textview.set_wrap_mode(Gtk.WrapMode.WORD)
+
         self.textbuffer = self.textview.get_buffer()
         self.scrolledwindow = Gtk.ScrolledWindow()
-        self.scrolledwindow.set_vexpand(True)
+        self.scrolledwindow.set_size_request(-1, 5)  # -1 oznacza, że szerokość zostanie zachowana domyślna
+        self.scrolledwindow.set_vexpand(False)
         self.scrolledwindow.set_hexpand(True)
+        # Create a Gtk.Adjustment object
+        adjustment = Gtk.Adjustment(value=1, lower=0, upper=100, step_increment=1, page_increment=10, page_size=0)
+
+        # Set the vertical adjustment of the scrolled window
+        self.scrolledwindow.set_vadjustment(adjustment)
         self.scrolledwindow.add(self.textview)
 
         self.header_bar = Gtk.HeaderBar()
@@ -72,7 +79,6 @@ class DVBV5Player(Gtk.Window):
         self.add(self.grid)
         self.set_titlebar(self.header_bar)  
 
-        self.connect("window-state-event", self.on_window_state_event)
 
         self.player = None  
 
@@ -101,13 +107,6 @@ class DVBV5Player(Gtk.Window):
                 for j in range(4):
                     os.makedirs(os.path.join(subdir, f'f{j}'))
 
-    def on_window_state_event(self, widget, event):
-        if event.new_window_state & Gdk.WindowState.MAXIMIZED:
-            self.grid.set_row_homogeneous(True)
-            self.grid.set_column_homogeneous(True)
-        else:
-            self.grid.set_row_homogeneous(False)
-            self.grid.set_column_homogeneous(False)
 
     def load_playlist_files(self):
         playlist_dir = os.path.dirname(os.path.abspath(__file__))
